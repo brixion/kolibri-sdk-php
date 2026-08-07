@@ -1,0 +1,485 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * AssignmentsStatistics - Brixion Kolibri PHP SDK.
+ * API document version: 4.1.1245.0
+ */
+
+namespace Brixion\Kolibri\Model;
+
+use ArrayAccess;
+use Brixion\Kolibri\ObjectSerializer;
+
+/**
+ * AssignmentsStatistics.
+ * @implements \ArrayAccess<string, mixed>
+ */
+class AssignmentsStatistics implements ModelInterface, ArrayAccess, \JsonSerializable
+{
+    public const DISCRIMINATOR = null;
+
+    /**
+      * The original name of the model.
+      *
+      * @var string
+      */
+    protected static $modelTypeName = 'AssignmentsStatistics';
+
+    /**
+      * Array of property to type mappings. Used for (de)serialization
+      *
+      * @var string[]
+      */
+    protected static $attributeTypes = [
+        'commission_total' => 'float',
+        'listing_types' => '\Brixion\Kolibri\Model\ListingType[]',
+        'localities' => 'string[]',
+        'key_numbers' => 'int[]',
+    ];
+
+    /**
+      * Array of property to format mappings. Used for (de)serialization
+      *
+      * @var string[]
+      * @phpstan-var array<string, string|null>
+      * @psalm-var array<string, string|null>
+      */
+    protected static $attributeFormats = [
+        'commission_total' => 'decimal',
+        'listing_types' => null,
+        'localities' => null,
+        'key_numbers' => 'int32',
+    ];
+
+    /**
+      * Array of nullable properties. Used for (de)serialization
+      *
+      * @var boolean[]
+      */
+    protected static array $nullables = [
+        'commission_total' => false,
+        'listing_types' => false,
+        'localities' => false,
+        'key_numbers' => false,
+    ];
+
+    /**
+      * If a nullable field gets set to null, insert it here
+      *
+      * @var boolean[]
+      */
+    protected array $nullablesSetToNull = [];
+
+    /**
+     * Array of property to type mappings. Used for (de)serialization
+     *
+     * @return array
+     */
+    public static function attributeTypes()
+    {
+        return self::$attributeTypes;
+    }
+
+    /**
+     * Array of property to format mappings. Used for (de)serialization
+     *
+     * @return array
+     */
+    public static function attributeFormats()
+    {
+        return self::$attributeFormats;
+    }
+
+    /**
+     * Array of nullable properties
+     *
+     * @return array
+     */
+    protected static function nullables(): array
+    {
+        return self::$nullables;
+    }
+
+    /**
+     * Array of nullable field names deliberately set to null
+     *
+     * @return boolean[]
+     */
+    private function getNullablesSetToNull(): array
+    {
+        return $this->nullablesSetToNull;
+    }
+
+    /**
+     * Setter - Array of nullable field names deliberately set to null
+     *
+     * @param boolean[] $nullablesSetToNull
+     */
+    private function setNullablesSetToNull(array $nullablesSetToNull): void
+    {
+        $this->nullablesSetToNull = $nullablesSetToNull;
+    }
+
+    /**
+     * Checks if a property is nullable
+     *
+     * @param string $property
+     * @return bool
+     */
+    public static function isNullable(string $property): bool
+    {
+        return self::nullables()[$property] ?? false;
+    }
+
+    /**
+     * Checks if a nullable property is set to null.
+     *
+     * @param string $property
+     * @return bool
+     */
+    public function isNullableSetToNull(string $property): bool
+    {
+        return in_array($property, $this->getNullablesSetToNull(), true);
+    }
+
+    /**
+     * Array of attributes where the key is the local name,
+     * and the value is the original name
+     *
+     * @var string[]
+     */
+    protected static $attributeMap = [
+        'commission_total' => 'commissionTotal',
+        'listing_types' => 'listingTypes',
+        'localities' => 'localities',
+        'key_numbers' => 'keyNumbers',
+    ];
+
+    /**
+     * Array of attributes to setter functions (for deserialization of responses)
+     *
+     * @var string[]
+     */
+    protected static $setters = [
+        'commission_total' => 'setCommissionTotal',
+        'listing_types' => 'setListingTypes',
+        'localities' => 'setLocalities',
+        'key_numbers' => 'setKeyNumbers',
+    ];
+
+    /**
+     * Array of attributes to getter functions (for serialization of requests)
+     *
+     * @var string[]
+     */
+    protected static $getters = [
+        'commission_total' => 'getCommissionTotal',
+        'listing_types' => 'getListingTypes',
+        'localities' => 'getLocalities',
+        'key_numbers' => 'getKeyNumbers',
+    ];
+
+    /**
+     * Array of attributes where the key is the local name,
+     * and the value is the original name
+     *
+     * @return array
+     */
+    public static function attributeMap()
+    {
+        return self::$attributeMap;
+    }
+
+    /**
+     * Array of attributes to setter functions (for deserialization of responses)
+     *
+     * @return array
+     */
+    public static function setters()
+    {
+        return self::$setters;
+    }
+
+    /**
+     * Array of attributes to getter functions (for serialization of requests)
+     *
+     * @return array
+     */
+    public static function getters()
+    {
+        return self::$getters;
+    }
+
+    /**
+     * The original name of the model.
+     *
+     * @return string
+     */
+    public function getModelName()
+    {
+        return self::$modelTypeName;
+    }
+
+
+    /**
+     * Associative array for storing property values
+     *
+     * @var mixed[]
+     */
+    protected $container = [];
+
+    /**
+     * Constructor
+     *
+     * @param mixed[]|null $data Associated array of property values
+     *                      initializing the model
+     */
+    public function __construct(?array $data = null)
+    {
+        $this->setIfExists('commission_total', $data ?? [], null);
+        $this->setIfExists('listing_types', $data ?? [], null);
+        $this->setIfExists('localities', $data ?? [], null);
+        $this->setIfExists('key_numbers', $data ?? [], null);
+    }
+
+    /**
+    * Sets $this->container[$variableName] to the given data or to the given default Value; if $variableName
+    * is nullable and its value is set to null in the $fields array, then mark it as "set to null" in the
+    * $this->nullablesSetToNull array
+    *
+    * @param string $variableName
+    * @param array  $fields
+    * @param mixed  $defaultValue
+    */
+    private function setIfExists(string $variableName, array $fields, $defaultValue): void
+    {
+        if (self::isNullable($variableName) && array_key_exists($variableName, $fields) && is_null($fields[$variableName])) {
+            $this->nullablesSetToNull[] = $variableName;
+        }
+
+        $this->container[$variableName] = $fields[$variableName] ?? $defaultValue;
+    }
+
+    /**
+     * Show all the invalid properties with reasons.
+     *
+     * @return array invalid properties with reasons
+     */
+    public function listInvalidProperties()
+    {
+        $invalidProperties = [];
+
+        return $invalidProperties;
+    }
+
+    /**
+     * Validate all the properties in the model
+     * return true if all passed
+     *
+     * @return bool True if all properties are valid
+     */
+    public function valid()
+    {
+        return count($this->listInvalidProperties()) === 0;
+    }
+
+
+    /**
+     * Gets commission_total
+     *
+     * @return float|null
+     */
+    public function getCommissionTotal()
+    {
+        return $this->container['commission_total'];
+    }
+
+    /**
+     * Sets commission_total
+     *
+     * @param float|null $commission_total The sum of the total (sale + rent) commission of all filtered assignments.
+     *
+     * @return self
+     */
+    public function setCommissionTotal($commission_total)
+    {
+        if (is_null($commission_total)) {
+            throw new \InvalidArgumentException('non-nullable commission_total cannot be null');
+        }
+        $this->container['commission_total'] = $commission_total;
+
+        return $this;
+    }
+
+    /**
+     * Gets listing_types
+     *
+     * @return \Brixion\Kolibri\Model\ListingType[]|null
+     */
+    public function getListingTypes()
+    {
+        return $this->container['listing_types'];
+    }
+
+    /**
+     * Sets listing_types
+     *
+     * @param \Brixion\Kolibri\Model\ListingType[]|null $listing_types A list of all listing types of all assignments.
+     *
+     * @return self
+     */
+    public function setListingTypes($listing_types)
+    {
+        if (is_null($listing_types)) {
+            throw new \InvalidArgumentException('non-nullable listing_types cannot be null');
+        }
+        $this->container['listing_types'] = $listing_types;
+
+        return $this;
+    }
+
+    /**
+     * Gets localities
+     *
+     * @return string[]|null
+     */
+    public function getLocalities()
+    {
+        return $this->container['localities'];
+    }
+
+    /**
+     * Sets localities
+     *
+     * @param string[]|null $localities A list of all locality names of all assignments.
+     *
+     * @return self
+     */
+    public function setLocalities($localities)
+    {
+        if (is_null($localities)) {
+            throw new \InvalidArgumentException('non-nullable localities cannot be null');
+        }
+        $this->container['localities'] = $localities;
+
+        return $this;
+    }
+
+    /**
+     * Gets key_numbers
+     *
+     * @return int[]|null
+     */
+    public function getKeyNumbers()
+    {
+        return $this->container['key_numbers'];
+    }
+
+    /**
+     * Sets key_numbers
+     *
+     * @param int[]|null $key_numbers A list of all key numbers that have an assignment.
+     *
+     * @return self
+     */
+    public function setKeyNumbers($key_numbers)
+    {
+        if (is_null($key_numbers)) {
+            throw new \InvalidArgumentException('non-nullable key_numbers cannot be null');
+        }
+        $this->container['key_numbers'] = $key_numbers;
+
+        return $this;
+    }
+    /**
+     * Returns true if offset exists. False otherwise.
+     *
+     * @param integer $offset Offset
+     *
+     * @return boolean
+     */
+    public function offsetExists($offset): bool
+    {
+        return isset($this->container[$offset]);
+    }
+
+    /**
+     * Gets offset.
+     *
+     * @param integer $offset Offset
+     *
+     * @return mixed|null
+     */
+    #[\ReturnTypeWillChange]
+    public function offsetGet($offset)
+    {
+        return $this->container[$offset] ?? null;
+    }
+
+    /**
+     * Sets value based on offset.
+     *
+     * @param int|null $offset Offset
+     * @param mixed    $value  Value to be set
+     *
+     * @return void
+     */
+    public function offsetSet($offset, $value): void
+    {
+        if (is_null($offset)) {
+            $this->container[] = $value;
+        } else {
+            $this->container[$offset] = $value;
+        }
+    }
+
+    /**
+     * Unsets offset.
+     *
+     * @param integer $offset Offset
+     *
+     * @return void
+     */
+    public function offsetUnset($offset): void
+    {
+        unset($this->container[$offset]);
+    }
+
+    /**
+     * Serializes the object to a value that can be serialized natively by json_encode().
+     * @link https://www.php.net/manual/en/jsonserializable.jsonserialize.php
+     *
+     * @return mixed Returns data which can be serialized by json_encode(), which is a value
+     * of any type other than a resource.
+     */
+    #[\ReturnTypeWillChange]
+    public function jsonSerialize()
+    {
+        return ObjectSerializer::sanitizeForSerialization($this);
+    }
+
+    /**
+     * Gets the string presentation of the object
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return json_encode(
+            ObjectSerializer::sanitizeForSerialization($this),
+            JSON_PRETTY_PRINT,
+        );
+    }
+
+    /**
+     * Gets a header-safe presentation of the object
+     *
+     * @return string
+     */
+    public function toHeaderValue()
+    {
+        return json_encode(ObjectSerializer::sanitizeForSerialization($this));
+    }
+}

@@ -1,0 +1,45 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * AssignmentTermField - Brixion Kolibri PHP SDK.
+ * API document version: 4.1.1245.0
+ */
+
+namespace Brixion\Kolibri\Model;
+
+use Brixion\Kolibri\ObjectSerializer;
+
+/**
+ * AssignmentTermField.
+ *
+ * Search for a text in one of the fields indicated by the AssignmentTermField.
+ */
+class AssignmentTermField
+{
+    /**
+     * Possible values of this enum
+     */
+    public const PUBLIC_REFERENCE = 'PublicReference';
+
+    public const STREET_NAME_AND_NUMBER = 'StreetNameAndNumber';
+
+    public const POSTAL_CODE = 'PostalCode';
+
+    public const LOCALITY = 'Locality';
+
+    /**
+     * Gets allowable values of the enum
+     * @return string[]
+     */
+    public static function getAllowableEnumValues()
+    {
+        return [
+            self::PUBLIC_REFERENCE,
+            self::STREET_NAME_AND_NUMBER,
+            self::POSTAL_CODE,
+            self::LOCALITY,
+        ];
+    }
+}

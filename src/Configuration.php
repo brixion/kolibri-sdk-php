@@ -1,0 +1,497 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Configuration (hosts, token provider, User-Agent).
+ */
+
+namespace Brixion\Kolibri;
+
+use Composer\InstalledVersions;
+
+/**
+ * Configuration for the Kolibri24 API client.
+ */
+class Configuration
+{
+    public const BOOLEAN_FORMAT_INT = 'int';
+
+    public const BOOLEAN_FORMAT_STRING = 'string';
+
+    public const HOST_SANDBOX = 'https://sandbox-api.kolibri24.com';
+
+    public const HOST_LIVE = 'https://api.kolibri24.com';
+
+    /**
+     * Associate array to store API key(s).
+     *
+     * @var string[]
+     */
+    protected array $apiKeys = [];
+
+    /**
+     * Associate array to store API prefix (e.g. Bearer).
+     *
+     * @var string[]
+     */
+    protected array $apiKeyPrefixes = [];
+
+    /**
+     * Access token for OAuth.
+     */
+    protected string $accessToken = '';
+
+    /**
+     * Optional dynamic access-token source (preferred over a static snapshot).
+     *
+     * @var null|ClientCredentials|(callable(): string)
+     */
+    protected $accessTokenProvider = null;
+
+    /**
+     * Boolean format for query string serialization.
+     */
+    protected string $booleanFormatForQueryString = self::BOOLEAN_FORMAT_INT;
+
+    /**
+     * Username for HTTP basic authentication.
+     */
+    protected string $username = '';
+
+    /**
+     * Password for HTTP basic authentication.
+     */
+    protected string $password = '';
+
+    /**
+     * The host.
+     */
+    protected string $host = '';
+
+    /**
+     * User agent of the HTTP request.
+     */
+    protected string $userAgent;
+
+    /**
+     * Debug switch (default set to false).
+     */
+    protected bool $debug = false;
+
+    /**
+     * Debug file location (log to STDOUT by default).
+     */
+    protected string $debugFile = 'php://output';
+
+    /**
+     * Temp folder path.
+     */
+    protected string $tempFolderPath;
+
+    private static ?self $defaultConfiguration = null;
+
+    /**
+     * Constructor.
+     *
+     * @param string|null $host API base URL; defaults to sandbox
+     */
+    public function __construct(?string $host = null)
+    {
+        $this->host = $host ?? self::HOST_SANDBOX;
+        $this->tempFolderPath = \sys_get_temp_dir();
+        $this->userAgent = self::defaultUserAgent();
+    }
+
+    public static function sandbox(): self
+    {
+        return new self(self::HOST_SANDBOX);
+    }
+
+    public static function live(): self
+    {
+        return new self(self::HOST_LIVE);
+    }
+
+    public static function defaultUserAgent(): string
+    {
+        $version = 'dev';
+
+        try {
+            if (class_exists(InstalledVersions::class)
+                && InstalledVersions::isInstalled('brixion/kolibri-sdk-php')
+            ) {
+                $version = InstalledVersions::getPrettyVersion('brixion/kolibri-sdk-php') ?? 'dev';
+            }
+        } catch (\Throwable) {
+            $version = 'dev';
+        }
+
+        return 'brixion/kolibri-sdk-php/' . $version;
+    }
+
+    /**
+     * Sets API key.
+     *
+     * @param string $apiKeyIdentifier API key identifier (authentication scheme)
+     * @param string $key              API key or token
+     *
+     * @return $this
+     */
+    public function setApiKey($apiKeyIdentifier, $key)
+    {
+        $this->apiKeys[$apiKeyIdentifier] = $key;
+
+        return $this;
+    }
+
+    /**
+     * Gets API key.
+     *
+     * @param string $apiKeyIdentifier API key identifier (authentication scheme)
+     *
+     * @return string API key or token
+     */
+    public function getApiKey($apiKeyIdentifier)
+    {
+        return $this->apiKeys[$apiKeyIdentifier] ?? null;
+    }
+
+    /**
+     * Sets the prefix for API key (e.g. Bearer).
+     *
+     * @param string $apiKeyIdentifier API key identifier (authentication scheme)
+     * @param string $prefix           API key prefix, e.g. Bearer
+     *
+     * @return $this
+     */
+    public function setApiKeyPrefix($apiKeyIdentifier, $prefix)
+    {
+        $this->apiKeyPrefixes[$apiKeyIdentifier] = $prefix;
+
+        return $this;
+    }
+
+    /**
+     * Gets API key prefix.
+     *
+     * @param string $apiKeyIdentifier API key identifier (authentication scheme)
+     *
+     * @return string
+     */
+    public function getApiKeyPrefix($apiKeyIdentifier)
+    {
+        return $this->apiKeyPrefixes[$apiKeyIdentifier] ?? null;
+    }
+
+    /**
+     * Sets the access token for OAuth.
+     *
+     * @param string $accessToken Token for OAuth
+     *
+     * @return $this
+     */
+    public function setAccessToken($accessToken)
+    {
+        $this->accessToken = $accessToken;
+
+        return $this;
+    }
+
+    /**
+     * Prefer a provider over a static token so tokens refresh automatically.
+     *
+     * @param null|ClientCredentials|(callable(): string) $provider
+     *
+     * @return $this
+     */
+    public function setAccessTokenProvider(ClientCredentials|callable|null $provider): self
+    {
+        $this->accessTokenProvider = $provider;
+
+        return $this;
+    }
+
+    /**
+     * Gets the access token for OAuth.
+     *
+     * Returns null when no token is available so generated clients skip the Authorization header.
+     *
+     * @return null|string Access token for OAuth
+     */
+    public function getAccessToken()
+    {
+        if ($this->accessTokenProvider instanceof ClientCredentials) {
+            $token = $this->accessTokenProvider->getAccessToken();
+
+            return $token === '' ? null : $token;
+        }
+
+        if (is_callable($this->accessTokenProvider)) {
+            $token = ($this->accessTokenProvider)();
+
+            return $token === '' ? null : $token;
+        }
+
+        return $this->accessToken === '' ? null : $this->accessToken;
+    }
+
+    /**
+     * Sets boolean format for query string serialization.
+     *
+     * @return $this
+     */
+    public function setBooleanFormatForQueryString(string $booleanFormat): self
+    {
+        $this->booleanFormatForQueryString = $booleanFormat;
+
+        return $this;
+    }
+
+    /**
+     * Gets boolean format for query string serialization.
+     */
+    public function getBooleanFormatForQueryString(): string
+    {
+        return $this->booleanFormatForQueryString;
+    }
+
+    /**
+     * Sets the username for HTTP basic authentication.
+     *
+     * @param string $username Username for HTTP basic authentication
+     *
+     * @return $this
+     */
+    public function setUsername($username)
+    {
+        $this->username = $username;
+
+        return $this;
+    }
+
+    /**
+     * Gets the username for HTTP basic authentication.
+     *
+     * @return string Username for HTTP basic authentication
+     */
+    public function getUsername()
+    {
+        return $this->username;
+    }
+
+    /**
+     * Sets the password for HTTP basic authentication.
+     *
+     * @param string $password Password for HTTP basic authentication
+     *
+     * @return $this
+     */
+    public function setPassword($password)
+    {
+        $this->password = $password;
+
+        return $this;
+    }
+
+    /**
+     * Gets the password for HTTP basic authentication.
+     *
+     * @return string Password for HTTP basic authentication
+     */
+    public function getPassword()
+    {
+        return $this->password;
+    }
+
+    /**
+     * Sets the host.
+     *
+     * @param string $host Host
+     *
+     * @return $this
+     */
+    public function setHost($host)
+    {
+        $this->host = $host;
+
+        return $this;
+    }
+
+    /**
+     * Gets the host.
+     *
+     * @return string Host
+     */
+    public function getHost()
+    {
+        return $this->host;
+    }
+
+    /**
+     * Sets the user agent of the api client.
+     *
+     * @param string $userAgent the user agent of the api client
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return $this
+     */
+    public function setUserAgent($userAgent)
+    {
+        if (!\is_string($userAgent)) {
+            throw new \InvalidArgumentException('User-agent must be a string.');
+        }
+
+        $this->userAgent = $userAgent;
+
+        return $this;
+    }
+
+    /**
+     * Gets the user agent of the api client.
+     *
+     * @return string user agent
+     */
+    public function getUserAgent()
+    {
+        return $this->userAgent;
+    }
+
+    /**
+     * Sets debug flag.
+     *
+     * @param bool $debug Debug flag
+     *
+     * @return $this
+     */
+    public function setDebug($debug)
+    {
+        $this->debug = $debug;
+
+        return $this;
+    }
+
+    /**
+     * Gets the debug flag.
+     *
+     * @return bool
+     */
+    public function getDebug()
+    {
+        return $this->debug;
+    }
+
+    /**
+     * Sets the debug file.
+     *
+     * @param string $debugFile Debug file
+     *
+     * @return $this
+     */
+    public function setDebugFile($debugFile)
+    {
+        $this->debugFile = $debugFile;
+
+        return $this;
+    }
+
+    /**
+     * Gets the debug file.
+     *
+     * @return string
+     */
+    public function getDebugFile()
+    {
+        return $this->debugFile;
+    }
+
+    /**
+     * Sets the temp folder path.
+     *
+     * @param string $tempFolderPath Temp folder path
+     *
+     * @return $this
+     */
+    public function setTempFolderPath($tempFolderPath)
+    {
+        $this->tempFolderPath = $tempFolderPath;
+
+        return $this;
+    }
+
+    /**
+     * Gets the temp folder path.
+     *
+     * @return string Temp folder path
+     */
+    public function getTempFolderPath()
+    {
+        return $this->tempFolderPath;
+    }
+
+    /**
+     * Gets the default configuration instance.
+     *
+     * @return Configuration
+     */
+    public static function getDefaultConfiguration()
+    {
+        if (self::$defaultConfiguration === null) {
+            self::$defaultConfiguration = new self();
+        }
+
+        return self::$defaultConfiguration;
+    }
+
+    /**
+     * Sets the detault configuration instance.
+     *
+     * @param Configuration $config An instance of the Configuration Object
+     */
+    public static function setDefaultConfiguration(self $config): void
+    {
+        self::$defaultConfiguration = $config;
+    }
+
+    /**
+     * Gets the essential information for debugging.
+     *
+     * @return string The report for debugging
+     */
+    public static function toDebugReport()
+    {
+        $report = 'PHP SDK (Brixion\Kolibri) Debug Report:' . \PHP_EOL;
+        $report .= '    OS: ' . \php_uname() . \PHP_EOL;
+        $report .= '    PHP Version: ' . \PHP_VERSION . \PHP_EOL;
+        $report .= '    OpenAPI Spec Version: 4.1.1245.0' . \PHP_EOL;
+        $report .= '    Temp Folder Path: ' . self::getDefaultConfiguration()->getTempFolderPath() . \PHP_EOL;
+
+        return $report;
+    }
+
+    /**
+     * Get API key (with prefix if set).
+     *
+     * @param string $apiKeyIdentifier name of apikey
+     *
+     * @return null|string API key with the prefix
+     */
+    public function getApiKeyWithPrefix($apiKeyIdentifier)
+    {
+        $prefix = $this->getApiKeyPrefix($apiKeyIdentifier);
+        $apiKey = $this->getApiKey($apiKeyIdentifier);
+
+        if ($apiKey === null) {
+            return null;
+        }
+
+        if ($prefix === null) {
+            $keyWithPrefix = $apiKey;
+        } else {
+            $keyWithPrefix = $prefix . ' ' . $apiKey;
+        }
+
+        return $keyWithPrefix;
+    }
+}
